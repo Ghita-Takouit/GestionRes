@@ -1,6 +1,7 @@
 package Forms;
 
 import javax.swing.*;
+import javax.swing.border.*;
 import java.awt.*;
 
 public class Main extends javax.swing.JFrame {
@@ -15,31 +16,54 @@ public class Main extends javax.swing.JFrame {
 
     private void initComponents() {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setMinimumSize(new Dimension(800, 600));
 
-        // Create the sidebar panel
+        // Create and style the navbar
+        JPanel navbarPanel = new JPanel();
+        navbarPanel.setBackground(new Color(47, 53, 66));  // Changed to match sidebar color
+        navbarPanel.setPreferredSize(new Dimension(800, 50));
+        navbarPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 20, 10));
+
+        JLabel titleLabel = new JLabel("Gestion Reservation");
+        titleLabel.setForeground(Color.WHITE);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        navbarPanel.add(titleLabel);
+
+        // Create and style the sidebar
         sidebarPanel = new JPanel();
-        sidebarPanel.setBackground(Color.LIGHT_GRAY);
-        sidebarPanel.setPreferredSize(new Dimension(150, 300));
+        sidebarPanel.setBackground(new Color(47, 53, 66));
+        sidebarPanel.setPreferredSize(new Dimension(200, 600));
+        sidebarPanel.setBorder(new EmptyBorder(20, 0, 0, 0));
 
-        // Create buttons for the sidebar
-        JButton clientFormButton = new JButton("Client Form");
-        JButton ChambreFormButton = new JButton("Chambre Form");
+        // Create custom menu items
+        JPanel clientButton = createMenuItem("Clients", "👥");
+        JPanel chambreButton = createMenuItem("Chambres", "🏠");
 
-        // Add action listeners to the buttons
-        clientFormButton.addActionListener(e -> showClientForm());
-        ChambreFormButton.addActionListener(e -> showChambreForm());
+        // Add action listeners to the menu items
+        clientButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                showClientForm();
+            }
+        });
+        
+        chambreButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                showChambreForm();
+            }
+        });
 
-        // Add buttons to the sidebar panel
+        // Add menu items to sidebar
         sidebarPanel.setLayout(new BoxLayout(sidebarPanel, BoxLayout.Y_AXIS));
-        sidebarPanel.add(clientFormButton);
-        sidebarPanel.add(ChambreFormButton);
+        sidebarPanel.add(clientButton);
+        sidebarPanel.add(chambreButton);
 
         // Create the content panel with CardLayout
         contentPanel = new JPanel();
+        contentPanel.setBackground(new Color(241, 242, 246));
         cardLayout = new CardLayout();
         contentPanel.setLayout(cardLayout);
 
-        // Create and add the ClientForm and OtherForm to the content panel
+        // Add forms to content panel
         ClientForm clientForm = new ClientForm();
         ChambreForm chambreForm = new ChambreForm();
         contentPanel.add(clientForm, "ClientForm");
@@ -47,10 +71,41 @@ public class Main extends javax.swing.JFrame {
 
         // Set the layout of the main frame
         setLayout(new BorderLayout());
+        add(navbarPanel, BorderLayout.NORTH);
         add(sidebarPanel, BorderLayout.WEST);
         add(contentPanel, BorderLayout.CENTER);
 
         pack();
+        setLocationRelativeTo(null);
+    }
+
+    private JPanel createMenuItem(String text, String icon) {
+        JPanel menuItem = new JPanel();
+        menuItem.setLayout(new FlowLayout(FlowLayout.LEFT, 20, 10));
+        menuItem.setBackground(new Color(47, 53, 66));
+        menuItem.setMaximumSize(new Dimension(200, 40));
+        
+        JLabel iconLabel = new JLabel(icon);
+        iconLabel.setForeground(Color.WHITE);
+        iconLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        
+        JLabel textLabel = new JLabel(text);
+        textLabel.setForeground(Color.WHITE);
+        textLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        
+        menuItem.add(iconLabel);
+        menuItem.add(textLabel);
+
+        menuItem.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                menuItem.setBackground(new Color(87, 101, 116));
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                menuItem.setBackground(new Color(47, 53, 66));
+            }
+        });
+
+        return menuItem;
     }
 
     private void showClientForm() {
