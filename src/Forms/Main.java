@@ -14,6 +14,8 @@ public class Main extends javax.swing.JFrame {
         initComponents();
     }
 
+    
+
     private void initComponents() {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(800, 600));
@@ -38,6 +40,8 @@ public class Main extends javax.swing.JFrame {
         // Create custom menu items
         JPanel clientButton = createMenuItem("Clients", "👥");
         JPanel chambreButton = createMenuItem("Chambres", "🏠");
+        JPanel reservationButton = createMenuItem("Reservation", "👥");
+
 
         // Add action listeners to the menu items
         clientButton.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -51,11 +55,18 @@ public class Main extends javax.swing.JFrame {
                 showChambreForm();
             }
         });
+        
+        reservationButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                showReservationForm();
+            }
+        });
 
         // Add menu items to sidebar
         sidebarPanel.setLayout(new BoxLayout(sidebarPanel, BoxLayout.Y_AXIS));
         sidebarPanel.add(clientButton);
         sidebarPanel.add(chambreButton);
+        sidebarPanel.add(reservationButton);
 
         // Create the content panel with CardLayout
         contentPanel = new JPanel();
@@ -66,8 +77,11 @@ public class Main extends javax.swing.JFrame {
         // Add forms to content panel
         ClientForm clientForm = new ClientForm();
         ChambreForm chambreForm = new ChambreForm();
+        ReservationForm reservationForm = new ReservationForm();
+
         contentPanel.add(clientForm, "ClientForm");
         contentPanel.add(chambreForm, "ChambreForm");
+        contentPanel.add(reservationForm, "ReservationForm");
 
         // Set the layout of the main frame
         setLayout(new BorderLayout());
@@ -112,10 +126,14 @@ public class Main extends javax.swing.JFrame {
         cardLayout.show(contentPanel, "ClientForm");
     }
 
-    private void showChambreForm() {
+    void showChambreForm() {
         cardLayout.show(contentPanel, "ChambreForm");
     }
 
+    void showReservationForm() {
+        cardLayout.show(contentPanel, "ReservationForm");
+    }
+    
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">

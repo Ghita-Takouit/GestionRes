@@ -4,19 +4,153 @@
  */
 package Forms;
 
+import entities.Categorie;
+import entities.Chambre;
+import java.awt.Color;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.List;
+import javax.swing.JOptionPane;
+import javax.swing.RowFilter;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
+import service.CategorieService;
+import service.ChambreService;
+
 /**
  *
  * @author aeztic
  */
 public class ChambreForm extends javax.swing.JPanel {
-
+    private ChambreService cs;
+    private DefaultTableModel model;
+    private TableRowSorter<DefaultTableModel> rowSorter;
     /**
      * Creates new form ChambreForm
      */
     public ChambreForm() {
         initComponents();
+        cs = new ChambreService();
+        model = (DefaultTableModel) chambreListe.getModel();
+        rowSorter = new TableRowSorter<>(model);
+        chambreListe.setRowSorter(rowSorter);
+        load();
+        chambreListe.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                int id = selectRow(evt);
+            }
+        });
+       
+        ItemsCatBox();
+        
+        searchTxt.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                search(searchTxt.getText());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                search(searchTxt.getText());
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                search(searchTxt.getText());
+            }
+
+            private void search(String str) {
+                if (str.trim().length() == 0) {
+                    rowSorter.setRowFilter(null);
+                } else {
+                    rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + str, 1, 2, 3,4));
+                }
+            }
+        });
     }
 
+    private void openCategorieForm() {
+        this.removeAll();
+   
+        // Create and add new CategorieForm
+        CategorieForm categorieForm = new CategorieForm();
+        this.setLayout(new java.awt.BorderLayout());
+        this.add(categorieForm, java.awt.BorderLayout.CENTER);
+        categorieForm.setVisible(true);
+
+        // Refresh the container
+        this.revalidate();
+        this.repaint();
+
+    }
+    
+    private void refreshAdd(Chambre c) {
+        model.addRow(new Object[]{
+                c.getId(),
+                c.getnumChambre(),
+                c.getTelephone(),
+                c.getPrix(),
+                c.getCategorie().getLibelle()
+
+        });
+    }
+    
+    public void load(){
+        for(Chambre c : cs.findAll()){
+            model.addRow(new Object[]{
+                c.getId(),
+                c.getnumChambre(),
+                c.getTelephone(),
+                c.getPrix(),
+                c.getCategorie(),
+                
+            });
+        }
+    }
+    
+    private boolean validField(String txt){
+        return txt != null && !txt.trim().isEmpty();
+    }
+
+    private void clearField(){
+        prixTxt.setText("");
+        telephoneTxt.setText("");
+        numChambreTxt.setText("");
+        categorieBox.setSelectedIndex(0);
+    }
+
+    private int selectRow(MouseEvent evt) {
+    int viewRow = chambreListe.rowAtPoint(evt.getPoint());
+    if (viewRow >= 0) {
+        int modelRow = chambreListe.convertRowIndexToModel(viewRow);
+        Object idValue = model.getValueAt(modelRow, 0);
+        if (idValue instanceof Integer) {
+            int id = (Integer) idValue;
+            numChambreTxt.setText(String.valueOf(model.getValueAt(modelRow, 1)));
+            telephoneTxt.setText(String.valueOf(model.getValueAt(modelRow, 2)));
+            prixTxt.setText(String.valueOf(model.getValueAt(modelRow, 3)));
+            categorieBox.setSelectedItem(model.getValueAt(modelRow, 4));
+            return id;
+        }
+    }
+    return -1;
+}
+
+    
+    
+    private void ItemsCatBox(){
+        categorieBox.removeAllItems();
+        categorieBox.addItem("Choisir une catégorie");
+        CategorieService catService = new CategorieService();
+        List<Categorie> categories = catService.findAll();
+        for(Categorie categorie : categories){
+            categorieBox.addItem(categorie.getLibelle());
+        }
+    }
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -26,19 +160,429 @@ public class ChambreForm extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        numChambreTxt = new javax.swing.JTextPane();
+        jLabel2 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        prixTxt = new javax.swing.JTextPane();
+        jLabel3 = new javax.swing.JLabel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        telephoneTxt = new javax.swing.JTextPane();
+        jLabel4 = new javax.swing.JLabel();
+        categorieBox = new javax.swing.JComboBox<>();
+        NewCatBtn = new javax.swing.JButton();
+        addBtn = new javax.swing.JButton();
+        editBtn = new javax.swing.JButton();
+        deleteBtn = new javax.swing.JButton();
+        clearBtn = new javax.swing.JButton();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        chambreListe = new javax.swing.JTable();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        searchTxt = new javax.swing.JTextPane();
+        jLabel5 = new javax.swing.JLabel();
+
+        jLabel1.setText("Numero chambre :");
+
+        jScrollPane1.setViewportView(numChambreTxt);
+
+        jLabel2.setText("Prix d'une nuitee :");
+
+        jScrollPane2.setViewportView(prixTxt);
+
+        jLabel3.setText("Telephone :");
+
+        jScrollPane3.setViewportView(telephoneTxt);
+
+        jLabel4.setText("Categorie :");
+
+        NewCatBtn.setBackground(new java.awt.Color(153, 153, 153));
+        NewCatBtn.setForeground(new java.awt.Color(255, 255, 255));
+        NewCatBtn.setText("Ajouter une nouvelle categorie ");
+        NewCatBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                NewCatBtnActionPerformed(evt);
+            }
+        });
+
+        addBtn.setBackground(new java.awt.Color(0, 153, 0));
+        addBtn.setForeground(new java.awt.Color(255, 255, 255));
+        addBtn.setText("Ajouter");
+        addBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addBtnActionPerformed(evt);
+            }
+        });
+
+        editBtn.setBackground(new java.awt.Color(51, 153, 255));
+        editBtn.setForeground(new java.awt.Color(255, 255, 255));
+        editBtn.setText("Modifier");
+        editBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editBtnActionPerformed(evt);
+            }
+        });
+
+        deleteBtn.setBackground(new java.awt.Color(255, 51, 0));
+        deleteBtn.setForeground(new java.awt.Color(255, 255, 255));
+        deleteBtn.setText("Supprimer");
+        deleteBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteBtnActionPerformed(evt);
+            }
+        });
+
+        clearBtn.setBackground(new java.awt.Color(102, 102, 102));
+        clearBtn.setForeground(new java.awt.Color(255, 255, 255));
+        clearBtn.setText("Effacer les champs");
+        clearBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clearBtnActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(categorieBox, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel2Layout.createSequentialGroup()
+                            .addGap(46, 46, 46)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 205, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel2Layout.createSequentialGroup()
+                            .addGap(23, 23, 23)
+                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jLabel2)
+                                .addComponent(jLabel1)
+                                .addComponent(jLabel3)
+                                .addComponent(jLabel4)))))
+                .addContainerGap(90, Short.MAX_VALUE))
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(addBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(editBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(deleteBtn, javax.swing.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(clearBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(NewCatBtn))
+                .addGap(27, 27, 27))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(41, 41, 41)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jLabel4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(categorieBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(27, 27, 27)
+                .addComponent(NewCatBtn)
+                .addGap(68, 68, 68)
+                .addComponent(addBtn)
+                .addGap(18, 18, 18)
+                .addComponent(editBtn)
+                .addGap(18, 18, 18)
+                .addComponent(deleteBtn)
+                .addGap(75, 75, 75)
+                .addComponent(clearBtn)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        chambreListe.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Id", "Num Chambre", "Telephone", "Prix", "Libelle"
+            }
+        ));
+        jScrollPane4.setViewportView(chambreListe);
+
+        jScrollPane5.setViewportView(searchTxt);
+
+        jLabel5.setText("Rechercher :");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 622, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel5)
+                        .addGap(18, 18, 18)
+                        .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(20, 20, 20))))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addGap(0, 48, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
+                    .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(49, 49, 49)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 541, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void clearBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearBtnActionPerformed
+        clearField();
+    }//GEN-LAST:event_clearBtnActionPerformed
+
+    private void addBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBtnActionPerformed
+        String prixStr = prixTxt.getText();
+        String numChambreStr = numChambreTxt.getText();
+        String telephone = telephoneTxt.getText();
+        String categorielib = (String) categorieBox.getSelectedItem();
+        boolean valid = true;
+        
+        if(!validField(prixStr)){
+            prixTxt.setBackground(Color.PINK);
+            valid = false;
+        } else {
+            prixTxt.setBackground(Color.WHITE);
+        }
+        
+        if(!validField(numChambreStr)){
+            numChambreTxt.setBackground(Color.PINK);
+            valid = false;
+        } else if(cs.isDuplicate("numChambre", numChambreStr)){
+            numChambreTxt.setBackground(Color.PINK);
+            JOptionPane.showMessageDialog(this, "Ce numéro de chambre est déjà utilisé !");
+            valid = false;
+        }
+        else{
+            numChambreTxt.setBackground(Color.WHITE);
+        }
+        
+        if(!validField(telephone)){
+            telephoneTxt.setBackground(Color.PINK);
+            valid = false;
+        }else{
+            telephoneTxt.setBackground(Color.WHITE);
+        }
+        
+        if(!validField(categorielib)){
+            categorieBox.setBackground(Color.PINK);
+            valid = false;
+        }else{
+            categorieBox.setBackground(Color.WHITE);
+        }
+        
+        if (!valid) {
+            JOptionPane.showMessageDialog(this , "Veuillez saisir toutes les informations !");
+            return;
+        }
+        
+        double prix;
+        int numChambre;
+        
+        try {
+            prix = Double.parseDouble(prixStr);
+            numChambre = Integer.parseInt(numChambreStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Nombre invalide", "Erreur", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        CategorieService categorieService = new CategorieService();
+        Categorie categorie = categorieService.findAll().stream()
+                .filter(cat -> cat.getLibelle().equals(categorielib))
+                .findFirst()
+                .orElse(null);
+
+        if (categorie == null) {
+            JOptionPane.showMessageDialog(this, "La catégorie sélectionnée est invalide.");
+            return;
+        }
+
+        Chambre c = new Chambre( numChambre, prix, telephone, categorie);
+
+        if (cs.create(c)) {
+        JOptionPane.showMessageDialog(this, "Chambre ajoutée avec succès !");
+        clearField();
+        refreshAdd(c);
+        } else {
+            JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout de la chambre.");
+        }
+    }//GEN-LAST:event_addBtnActionPerformed
+
+    private void editBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editBtnActionPerformed
+        int selectedRow = chambreListe.getSelectedRow();
+        if (selectedRow >= 0) {
+            int id = (int) model.getValueAt(selectedRow, 0);
+            String numChambreStr = numChambreTxt.getText();
+            String telephone = telephoneTxt.getText();
+            String prixStr = prixTxt.getText();
+            String categorielib = (String) categorieBox.getSelectedItem();
+            boolean valid = true;
+            
+        if(!validField(prixStr)){
+            prixTxt.setBackground(Color.PINK);
+            valid = false;
+        } else {
+            prixTxt.setBackground(Color.WHITE);
+        }
+        
+        if(!validField(numChambreStr)){
+            numChambreTxt.setBackground(Color.PINK);
+            valid = false;
+        } else if(cs.isDuplicate("numChambre", numChambreStr)){
+            numChambreTxt.setBackground(Color.PINK);
+            JOptionPane.showMessageDialog(this, "Ce numéro de chambre est déjà utilisé !");
+            valid = false;
+        }
+        else{
+            numChambreTxt.setBackground(Color.WHITE);
+        }
+        
+        if(!validField(telephone)){
+            telephoneTxt.setBackground(Color.PINK);
+            valid = false;
+        }else{
+            telephoneTxt.setBackground(Color.WHITE);
+        }
+        
+        if(!validField(categorielib)){
+            categorieBox.setBackground(Color.PINK);
+            valid = false;
+        }else{
+            categorieBox.setBackground(Color.WHITE);
+        }
+        
+        if (!valid) {
+            JOptionPane.showMessageDialog(this , "Veuillez saisir toutes les informations !");
+            return;
+        }
+        
+        double prix;
+        int numChambre;
+        
+        try {
+            prix = Double.parseDouble(prixStr);
+            numChambre = Integer.parseInt(numChambreStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Nombre invalide", "Erreur", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        CategorieService categorieService = new CategorieService();
+        Categorie categorie = categorieService.findAll().stream()
+                .filter(cat -> cat.getLibelle().equals(categorielib))
+                .findFirst()
+                .orElse(null);
+        
+        Chambre c = cs.findById(id);
+            if (c != null) {
+                c.setnumChambre(numChambre);
+                c.setTelephone(telephone);
+                c.setPrix(prix);
+                c.setCategorie(categorie);
+                if (cs.update(c)) {
+                    JOptionPane.showMessageDialog(this, "Chambre modifié avec succès !");
+                    model.setValueAt(numChambre, selectedRow, 1);
+                    model.setValueAt(telephone, selectedRow, 2);
+                    model.setValueAt(prix, selectedRow, 3);
+                    model.setValueAt(categorie, selectedRow, 4);
+                    clearField();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Une erreur s'est produite lors de l'ajout de la chambre. Veuillez réessayer.");
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Chambre introuvable !");
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Veuillez sélectionner une chambre à modifier.");
+        }
+    }//GEN-LAST:event_editBtnActionPerformed
+
+    private void deleteBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
+        int selectedRow = chambreListe.getSelectedRow();
+        if(selectedRow >= 0){
+            int id = (int) model.getValueAt(selectedRow, 0);
+            int confirm = JOptionPane.showConfirmDialog(this, "Êtes-vous sûr de vouloir supprimer cette chambre ?", "Confirmation", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                if (cs.delete(id)) {
+                    model.removeRow(selectedRow);
+                    JOptionPane.showMessageDialog(this, "Chambre supprimé avec succès !");
+                    clearField();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Erreur lors de la suppression de la chambre.");
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Veuillez sélectionner une chambre à supprimer.");
+        }
+    }//GEN-LAST:event_deleteBtnActionPerformed
+
+    private void NewCatBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NewCatBtnActionPerformed
+        openCategorieForm();
+    }//GEN-LAST:event_NewCatBtnActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton NewCatBtn;
+    private javax.swing.JButton addBtn;
+    private javax.swing.JComboBox<String> categorieBox;
+    private javax.swing.JTable chambreListe;
+    private javax.swing.JButton clearBtn;
+    private javax.swing.JButton deleteBtn;
+    private javax.swing.JButton editBtn;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JTextPane numChambreTxt;
+    private javax.swing.JTextPane prixTxt;
+    private javax.swing.JTextPane searchTxt;
+    private javax.swing.JTextPane telephoneTxt;
     // End of variables declaration//GEN-END:variables
 }

@@ -11,10 +11,16 @@ public class Reservation {
     private List<Client> clients;
     private List<Chambre> chambres;
 
-    private static int count = 0;
 
     public Reservation(Date dateDebut, Date dateFin, List<Client> clients, List<Chambre> chambres){
-        this.id = count++;
+        this.dateDebut=dateDebut;
+        this.dateFin=dateFin;
+        this.clients=new ArrayList<>(clients);
+        this.chambres=new ArrayList<>(chambres);
+    }
+    
+    public Reservation(int id,Date dateDebut, Date dateFin, List<Client> clients, List<Chambre> chambres){
+        this.id = id;
         this.dateDebut=dateDebut;
         this.dateFin=dateFin;
         this.clients=new ArrayList<>(clients);
@@ -57,25 +63,5 @@ public class Reservation {
     public int getId(){
         return this.id;
     }
-
-    public int getCount(){
-        return count;
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
