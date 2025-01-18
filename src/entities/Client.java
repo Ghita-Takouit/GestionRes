@@ -23,6 +23,8 @@ public class Client {
         this.email = email;
     }
 
+   
+
 
     public int getId() {
         return id;
@@ -57,7 +59,7 @@ public class Client {
 
     @Override
     public String toString(){
-        return "Client :"+"\nId : "+id+"\nNom : "+nom+"\nPrenom"+prenom+"\nTelephone : "+Telephone+"\nEmail : "+email;
+        return ""+nom;
     }
 
 }

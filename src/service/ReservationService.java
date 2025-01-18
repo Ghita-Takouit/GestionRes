@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class ReservationService implements IDAO<Reservation> {
@@ -57,16 +58,52 @@ public class ReservationService implements IDAO<Reservation> {
     }
 
     @Override
-    public boolean delete(int id) {
-        try {
-            PreparedStatement ps = Connexion.getCnx().prepareStatement(SQL_DELETE);
+public boolean delete(int id) {
+    Connection connection = null;
+    try {
+        connection = Connexion.getCnx();
+        if (connection == null || connection.isClosed()) {
+            throw new SQLException("Failed to obtain a valid database connection.");
+        }
+        connection.setAutoCommit(false);
+
+        // Delete related records in reservation_clients and reservation_chambres
+        String deleteClientsQuery = "DELETE FROM reservation_client WHERE reservation_id = ?";
+        try (PreparedStatement deleteClientsStatement = connection.prepareStatement(deleteClientsQuery)) {
+            deleteClientsStatement.setInt(1, id);
+            deleteClientsStatement.executeUpdate();
+        }
+
+        String deleteChambresQuery = "DELETE FROM reservation_chambre WHERE reservation_id = ?";
+        try (PreparedStatement deleteChambresStatement = connection.prepareStatement(deleteChambresQuery)) {
+            deleteChambresStatement.setInt(1, id);
+            deleteChambresStatement.executeUpdate();
+        }
+
+        // Delete the reservation
+        try (PreparedStatement ps = connection.prepareStatement(SQL_DELETE)) {
             ps.setInt(1, id);
-            return ps.executeUpdate() > 0;
+            boolean result = ps.executeUpdate() > 0;
+            connection.commit();
+            return result;
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            connection.rollback();
+            throw e;
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return false;
+    } finally {
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
+}
+
 
     @Override
     public Reservation findById(int id) {
@@ -78,8 +115,8 @@ public class ReservationService implements IDAO<Reservation> {
                 List<Client> clients = findClientsByReservationId(id);
                 List<Chambre> chambres = findChambresByReservationId(id);
                 return new Reservation(
-                        rs.getDate("date_debut"),
-                        rs.getDate("date_fin"),
+                        rs.getDate("dateDebut"),
+                        rs.getDate("dateFin"),
                         clients,
                         chambres
                 );
@@ -91,20 +128,24 @@ public class ReservationService implements IDAO<Reservation> {
     }
 
     @Override
-    public List<Reservation> findAll(){
+    public List<Reservation> findAll() {
         List<Reservation> reservations = new ArrayList<>();
         try {
-            PreparedStatement ps = Connexion.getCnx().prepareStatement(SQL_FINDALL);
+            Connection connection = Connexion.getCnx();
+            PreparedStatement ps = connection.prepareStatement(SQL_FINDALL);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                List<Client> clients = findClientsByReservationId(rs.getInt("id"));
-                List<Chambre> chambres = findChambresByReservationId(rs.getInt("id"));
-                reservations.add(new Reservation(
-                        rs.getDate("date_debut"),
-                        rs.getDate("date_fin"),
-                        clients,
-                        chambres
-                ));
+                int id = rs.getInt("id");
+                Date dateDebut = rs.getDate("dateDebut");
+                Date dateFin = rs.getDate("dateFin");
+
+                // Fetch clients and chambres
+                List<Client> clients = findClientsByReservationId(id);
+                List<Chambre> chambres = findChambresByReservationId(id);
+
+                // Use the appropriate constructor
+                Reservation reservation = new Reservation(id, dateDebut, dateFin, clients, chambres);
+                reservations.add(reservation);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -112,10 +153,11 @@ public class ReservationService implements IDAO<Reservation> {
         return reservations;
     }
 
+
     private void saveClientsAndChambres(int reservationId, Reservation reservation) throws SQLException {
         try (Connection connection = Connexion.getCnx()) {
             for (Client client : reservation.getClients()) {
-                String clientQuery = "INSERT INTO reservation_clients (reservation_id, client_id) VALUES (?, ?)";
+                String clientQuery = "INSERT INTO Reservation_Client (reservation_id, client_id) VALUES (?, ?)";
                 try (PreparedStatement clientStatement = connection.prepareStatement(clientQuery)) {
                     clientStatement.setInt(1, reservationId);
                     clientStatement.setInt(2, client.getId());
@@ -123,7 +165,7 @@ public class ReservationService implements IDAO<Reservation> {
                 }
             }
             for (Chambre chambre : reservation.getChambres()) {
-                String chambreQuery = "INSERT INTO reservation_chambres (reservation_id, chambre_id) VALUES (?, ?)";
+                String chambreQuery = "INSERT INTO Reservation_Chambre (reservation_id, chambre_id) VALUES (?, ?)";
                 try (PreparedStatement chambreStatement = connection.prepareStatement(chambreQuery)) {
                     chambreStatement.setInt(1, reservationId);
                     chambreStatement.setInt(2, chambre.getId());
@@ -133,14 +175,14 @@ public class ReservationService implements IDAO<Reservation> {
         }
     }
 
-    private void deleteClientsAndChambres(int reservationId) throws SQLException {
+    public void deleteClientsAndChambres(int reservationId) throws SQLException {
         try (Connection connection = Connexion.getCnx()) {
-            String deleteClientsQuery = "DELETE FROM reservation_clients WHERE reservation_id = ?";
+            String deleteClientsQuery = "DELETE FROM Reservation_Client WHERE reservation_id = ?";
             try (PreparedStatement deleteClientsStatement = connection.prepareStatement(deleteClientsQuery)) {
                 deleteClientsStatement.setInt(1, reservationId);
                 deleteClientsStatement.executeUpdate();
             }
-            String deleteChambresQuery = "DELETE FROM reservation_chambres WHERE reservation_id = ?";
+            String deleteChambresQuery = "DELETE FROM Reservation_Chambre WHERE reservation_id = ?";
             try (PreparedStatement deleteChambresStatement = connection.prepareStatement(deleteChambresQuery)) {
                 deleteChambresStatement.setInt(1, reservationId);
                 deleteChambresStatement.executeUpdate();
@@ -149,30 +191,30 @@ public class ReservationService implements IDAO<Reservation> {
     }
 
     private List<Client> findClientsByReservationId(int reservationId) throws SQLException {
-        List<Client> clients = new ArrayList<>();
-        String query = "SELECT client_id FROM reservation_clients WHERE reservation_id = ?";
-        try (Connection connection = Connexion.getCnx();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setInt(1, reservationId);
-            ResultSet resultSet = statement.executeQuery();
+    List<Client> clients = new ArrayList<>();
+    String query = "SELECT client_id FROM Reservation_Client WHERE reservation_id = ?";
+    try (PreparedStatement ps = Connexion.getCnx().prepareStatement(query)) {
+        ps.setInt(1, reservationId);
+        try (ResultSet rs = ps.executeQuery()) {
             ClientService clientService = new ClientService();
-            while (resultSet.next()) {
-                clients.add(clientService.findById(resultSet.getInt("client_id")));
+            while (rs.next()) {
+                clients.add(clientService.findById(rs.getInt("client_id")));
             }
         }
-        return clients;
+    }
+    return clients;
     }
 
     private List<Chambre> findChambresByReservationId(int reservationId) throws SQLException {
         List<Chambre> chambres = new ArrayList<>();
-        String query = "SELECT chambre_id FROM reservation_chambres WHERE reservation_id = ?";
-        try (Connection connection = Connexion.getCnx();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setInt(1, reservationId);
-            ResultSet resultSet = statement.executeQuery();
-            ChambreService chambreService = new ChambreService();
-            while (resultSet.next()) {
-                chambres.add(chambreService.findById(resultSet.getInt("chambre_id")));
+        String query = "SELECT chambre_id FROM Reservation_Chambre WHERE reservation_id = ?";
+        try (PreparedStatement ps = Connexion.getCnx().prepareStatement(query)) {
+            ps.setInt(1, reservationId);
+            try (ResultSet rs = ps.executeQuery()) {
+                ChambreService chambreService = new ChambreService();
+                while (rs.next()) {
+                    chambres.add(chambreService.findById(rs.getInt("chambre_id")));
+                }
             }
         }
         return chambres;
@@ -182,7 +224,4 @@ public class ReservationService implements IDAO<Reservation> {
 
 
 
-
-
 }
-

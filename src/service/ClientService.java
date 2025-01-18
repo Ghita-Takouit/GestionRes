@@ -7,6 +7,7 @@ import entities.Client;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,12 +62,16 @@ public class ClientService implements IDAO<Client> {
     public boolean delete(int id) {
         try {
             PreparedStatement ps = Connexion.getCnx().prepareStatement(SQL_DELETE);
-            ps.setInt(1,id);
-            return ps.executeUpdate() > 0;
+            ps.setInt(1, id);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLIntegrityConstraintViolationException e) {
+            System.err.println("Cannot delete or update a parent row: a foreign key constraint fails.");
+            e.printStackTrace();
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
+        return false;
     }
 
     @Override
@@ -88,6 +93,27 @@ public class ClientService implements IDAO<Client> {
             e.printStackTrace();
         }
         return null;
+    }
+    
+    public Client findByName(String nom) {
+        String query = "SELECT * FROM client WHERE nom = ?";
+        try {
+            PreparedStatement ps = Connexion.getCnx().prepareStatement(query);
+            ps.setString(1, nom);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return new Client(
+                    rs.getInt("id"),
+                    rs.getString("nom"),
+                    rs.getString("prenom"),
+                    rs.getString("telephone"),
+                    rs.getString("email")
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null; 
     }
 
     @Override
@@ -125,6 +151,7 @@ public class ClientService implements IDAO<Client> {
     }
     return false;
     }   
+    
     
     
 }

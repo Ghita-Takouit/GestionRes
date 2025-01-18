@@ -119,7 +119,7 @@ public class ChambreForm extends javax.swing.JPanel {
         telephoneTxt.setText("");
         numChambreTxt.setText("");
         categorieBox.setSelectedIndex(0);
-    }
+    } 
 
     private int selectRow(MouseEvent evt) {
     int viewRow = chambreListe.rowAtPoint(evt.getPoint());
@@ -526,7 +526,7 @@ public class ChambreForm extends javax.swing.JPanel {
                     model.setValueAt(categorie, selectedRow, 4);
                     clearField();
                 } else {
-                    JOptionPane.showMessageDialog(this, "Une erreur s'est produite lors de l'ajout de la chambre. Veuillez réessayer.");
+                    JOptionPane.showMessageDialog(this, "Une erreur s'est produite lors de la modification de la chambre. Veuillez réessayer.");
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "Chambre introuvable !");

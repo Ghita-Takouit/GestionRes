@@ -27,6 +27,8 @@ public class Reservation {
         this.chambres=new ArrayList<>(chambres);
     }
 
+    public Reservation() {
+    }
 
     public Date getDateDebut() {
         return dateDebut;
@@ -62,6 +64,10 @@ public class Reservation {
 
     public int getId(){
         return this.id;
+    }
+    
+    public void setId(int id){
+        this.id = id;
     }
 
 }

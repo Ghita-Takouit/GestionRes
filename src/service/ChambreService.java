@@ -96,9 +96,9 @@ public class ChambreService implements IDAO<Chambre> {
     @Override
     public List<Chambre> findAll() {
         List<Chambre> chambres = new ArrayList<>();
-        try (
-                PreparedStatement ps = Connexion.getCnx().prepareStatement(SQL_FINDALL);
-                ResultSet rs = ps.executeQuery()) {
+        try {
+            PreparedStatement ps = Connexion.getCnx().prepareStatement(SQL_FINDALL);
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 Categorie categorie = new CategorieService().findById(rs.getInt("categorie_id"));
                 chambres.add(new Chambre(
@@ -131,4 +131,13 @@ public class ChambreService implements IDAO<Chambre> {
     return false;
     }
     
+    public Chambre findByNum(int numChambre) {
+    for (Chambre chambre : findAll()) {
+        if (chambre.getnumChambre() == numChambre) {
+            return chambre;
+        }
+    }
+    return null;
+    }
+
 }

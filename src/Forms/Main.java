@@ -14,7 +14,7 @@ public class Main extends javax.swing.JFrame {
         initComponents();
     }
 
-    
+
 
     private void initComponents() {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -38,12 +38,19 @@ public class Main extends javax.swing.JFrame {
         sidebarPanel.setBorder(new EmptyBorder(20, 0, 0, 0));
 
         // Create custom menu items
+        JPanel dashButton = createMenuItem("Dashboard", "🏠");
         JPanel clientButton = createMenuItem("Clients", "👥");
         JPanel chambreButton = createMenuItem("Chambres", "🏠");
         JPanel reservationButton = createMenuItem("Reservation", "👥");
 
 
         // Add action listeners to the menu items
+        dashButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                showDashBoardForm();
+            }
+        });
+                
         clientButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 showClientForm();
@@ -61,9 +68,11 @@ public class Main extends javax.swing.JFrame {
                 showReservationForm();
             }
         });
+        
 
         // Add menu items to sidebar
         sidebarPanel.setLayout(new BoxLayout(sidebarPanel, BoxLayout.Y_AXIS));
+        sidebarPanel.add(dashButton);
         sidebarPanel.add(clientButton);
         sidebarPanel.add(chambreButton);
         sidebarPanel.add(reservationButton);
@@ -75,10 +84,12 @@ public class Main extends javax.swing.JFrame {
         contentPanel.setLayout(cardLayout);
 
         // Add forms to content panel
+        DashBoardForm dashForm = new DashBoardForm();
         ClientForm clientForm = new ClientForm();
         ChambreForm chambreForm = new ChambreForm();
         ReservationForm reservationForm = new ReservationForm();
 
+        contentPanel.add(dashForm, "DashBoardForm");
         contentPanel.add(clientForm, "ClientForm");
         contentPanel.add(chambreForm, "ChambreForm");
         contentPanel.add(reservationForm, "ReservationForm");
@@ -122,6 +133,10 @@ public class Main extends javax.swing.JFrame {
         return menuItem;
     }
 
+    void showDashBoardForm() {
+        cardLayout.show(contentPanel, "DashBoardForm");
+    }
+    
     private void showClientForm() {
         cardLayout.show(contentPanel, "ClientForm");
     }

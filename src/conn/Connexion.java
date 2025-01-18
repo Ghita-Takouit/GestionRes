@@ -21,10 +21,17 @@ public class Connexion {
         }
     }
 
-    public static Connection getCnx() {
-        return cnx;
+    
+    
+    public static Connection getCnx() throws SQLException {
+    // Ensure this always creates or fetches a valid, open connection
+    if (cnx == null || cnx.isClosed()) {
+        // Initialize the connection (make sure this is correct)
+        cnx = DriverManager.getConnection(url, user, password);
     }
-
+    return cnx;
+    }
+    
     public static void closeCnx() {
         if (cnx != null) {
             try {

@@ -69,7 +69,7 @@ public class Chambre {
     
     @Override
     public String toString() {
-        return "Chambre : "+"\nId : "+id+"\nCategorie : "+categorie.toString()+"\nTelephone : "+telephone + "\n numero Chambre :" + numChambre +"\n Prix:"+ prix;
+        return "" + numChambre ;
     }
 
 
