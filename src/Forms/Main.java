@@ -76,6 +76,19 @@ public class Main extends javax.swing.JFrame {
         sidebarPanel.add(clientButton);
         sidebarPanel.add(chambreButton);
         sidebarPanel.add(reservationButton);
+        
+        // Add vertical glue to push logout to bottom
+        sidebarPanel.add(Box.createVerticalGlue());
+        
+        // Create and add logout button
+        JPanel logoutButton = createMenuItem("Logout", "🚪");
+        logoutButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                handleLogout();
+            }
+        });
+        sidebarPanel.add(logoutButton);
+        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 20))); // Add bottom padding
 
         // Create the content panel with CardLayout
         contentPanel = new JPanel();
@@ -147,6 +160,20 @@ public class Main extends javax.swing.JFrame {
 
     void showReservationForm() {
         cardLayout.show(contentPanel, "ReservationForm");
+    }
+    
+    private void handleLogout() {
+        int confirm = JOptionPane.showConfirmDialog(
+            this,
+            "Are you sure you want to logout?",
+            "Confirm Logout",
+            JOptionPane.YES_NO_OPTION
+        );
+        
+        if (confirm == JOptionPane.YES_OPTION) {
+            // Add your logout logic here
+            System.exit(0); // For now, just exit the application
+        }
     }
     
     public static void main(String args[]) {
